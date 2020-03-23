@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import PropTypes from 'prop-types';
 import {
   TableContainer,
   Table,
@@ -38,7 +39,7 @@ const DataTable = ({ rows }) => {
           </TableHead>
           <TableBody>
             {rows.map(row => (
-              <TableRow key={row.name}>
+              <TableRow key={`${row.name}-${row.brand}-${row.model}`}>
                 <TableCell align="left">{row.name}</TableCell>
                 <TableCell align="left">{row.equipment}</TableCell>
                 <TableCell align="left">{row.brand}</TableCell>
@@ -60,6 +61,16 @@ const DataTable = ({ rows }) => {
       />
     </>
   );
+};
+
+DataTable.propTypes = {
+  rows: PropTypes.arrayOf(PropTypes.shape({
+    name: PropTypes.string,
+    equi: PropTypes.string,
+    bran: PropTypes.string,
+    mode: PropTypes.string,
+    city: PropTypes.string,
+  }))
 };
 
 export default DataTable;
