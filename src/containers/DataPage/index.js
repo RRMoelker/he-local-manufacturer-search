@@ -9,7 +9,6 @@ import DataTable from "../../components/DataTable";
 import DataMap from "../../components/DataMap";
 import Filter from "../../components/Filter";
 import SearchBar from "../../components/SearchBar";
-// import getData from "../../data/data"; //mock data source
 import "./DataPage.scss";
 import {API_KEY} from '../../config';
 import {debounce} from 'debounce';
