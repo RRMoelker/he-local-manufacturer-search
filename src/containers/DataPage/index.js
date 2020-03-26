@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from "react";
-import { Paper, Container } from "@material-ui/core";
+import React, {useEffect, useState} from "react";
+import {Paper, Container} from "@material-ui/core";
 import Button from "@material-ui/core/Button";
-import { useQuery } from "urql";
+import IconButton from '@material-ui/core/IconButton';
+import GpsFixedIcon from '@material-ui/icons/GpsFixed';
+import {useQuery} from "urql";
 
 import DataTable from "../../components/DataTable";
 import DataMap from "../../components/DataMap";
@@ -9,8 +11,8 @@ import Filter from "../../components/Filter";
 import SearchBar from "../../components/SearchBar";
 // import getData from "../../data/data"; //mock data source
 import "./DataPage.scss";
-import { API_KEY } from '../../config';
-import { debounce } from 'debounce';
+import {API_KEY} from '../../config';
+import {debounce} from 'debounce';
 
 const VIEW_TABLE = 'TABLE';
 const VIEW_MAP = 'MAP';
@@ -37,8 +39,8 @@ const displayQuery = `
 
 const getEquipmentFilterValues = () => {
   const equipmentList = [
-    { value: "3d-printer", label: "3D printer" },
-    { value: "cnc", label: "CNC" }
+    {value: "3d-printer", label: "3D printer"},
+    {value: "cnc", label: "CNC"}
   ];
   return equipmentList;
 };
@@ -67,13 +69,16 @@ const DataPage = () => {
   const equipmentFilterValues = getEquipmentFilterValues();
   const [rowsData, setRowsData] = useState([]);
   const [view, setView] = useState(VIEW_TABLE);
+  const [searchCoords, setSearchCoords] = useState();
   const [type, setEquipmentType] = useState(equipmentFilterValues[0]);
   const [searchResults, setSearchResults] = useState([]);
-  const [{ data: queryResult, fetching, error }] = useQuery({
+  const [{data: queryResult, fetching, error}] = useQuery({
     query: displayQuery,
   });
+  const geolocationSupported = navigator && navigator.geolocation;
 
   useEffect(() => {
+    // Fired after component mount
     if (queryResult) {
       const flattenedData = flattenModel(queryResult);
       setRowsData(flattenedData);
@@ -103,10 +108,29 @@ const DataPage = () => {
       .then((response) => console.log(response) || setSearchResults(response.results))
   }
 
+  function useDeviceLocation() {
+    navigator.geolocation.getCurrentPosition((position) => {
+      console.log('position: ', position);
+      setSearchCoords({
+        lat: position.latitude,
+        lng: position.longitude,
+      });
+    }, (error) => {
+      console.error('could not get device location: ', error.message)
+    });
+  }
+
   return (
     <Container maxWidth="lg" className="data-page" component={Paper}>
       <div className="data-page__filters">
-        <SearchBar onSearch={handleSearch} searchResults={searchResults} />
+        <SearchBar onSearch={handleSearch} searchResults={searchResults}/>
+
+        {geolocationSupported && (
+          <IconButton color="secondary" aria-label="use device location" onClick={useDeviceLocation}>
+            <GpsFixedIcon/>
+          </IconButton>
+        )}
+
         <Filter
           label={"equipment"}
           activeFilter={type}
@@ -126,18 +150,19 @@ const DataPage = () => {
           listOfValues={equipmentFilterValues}
         />
       </div>
-      <Button onClick={switchView} variant="contained" color="secondary">{view === VIEW_TABLE ? 'Show map' : 'Show table'}</Button>
+      <Button onClick={switchView} variant="contained"
+              color="secondary">{view === VIEW_TABLE ? 'Show map' : 'Show table'}</Button>
 
       <div className="data-page__content">
-        { view === VIEW_TABLE &&
-          <div className="data-page__table">
-            {fetching && <div>Loading...</div>}
-            {!fetching && <DataTable rows={rowsData} />}
-            {error && <div>{error}</div>}
-          </div>
+        {view === VIEW_TABLE &&
+        <div className="data-page__table">
+          {fetching && <div>Loading...</div>}
+          {!fetching && <DataTable rows={rowsData}/>}
+          {error && <div>{error}</div>}
+        </div>
         }
         {view === VIEW_MAP &&
-          <DataMap rows={rowsData} />
+        <DataMap rows={rowsData}/>
         }
       </div>
     </Container>
