@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import {
   Input,
   InputAdornment,
@@ -13,8 +13,19 @@ import GpsFixedIcon from "@material-ui/icons/GpsFixed";
 import InputLabel from "@material-ui/core/InputLabel";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
+import Filter from "../Filter";
+
+const getEquipmentFilterValues = () => {
+  const equipmentList = [
+    {value: "3d-printer", label: "3D printer"},
+    {value: "cnc", label: "CNC"}
+  ];
+  return equipmentList;
+};
 
 const SearchBar = ({ onSearch, searchResults, coords, setCoords, distance, setDistance}) => {
+  const equipmentFilterValues = getEquipmentFilterValues();
+  const [type, setEquipmentType] = useState(equipmentFilterValues[0]);
   const geolocationSupported = navigator && navigator.geolocation;
 
   function useDeviceLocation() {
@@ -31,6 +42,14 @@ const SearchBar = ({ onSearch, searchResults, coords, setCoords, distance, setDi
 
   function searchDistanceChange(e) {
     setDistance(e.target.value);
+  }
+
+  function handleEquipmentFilterChange(ev) {
+    const item = equipmentFilterValues.find(
+      item => item.value === ev.target.value
+    );
+    console.log('equipment filter change: ', item);
+    setEquipmentType(item);
   }
 
   return (
@@ -76,6 +95,13 @@ const SearchBar = ({ onSearch, searchResults, coords, setCoords, distance, setDi
           <MenuItem value={1000*1000*1000}>100,000,000 km</MenuItem>
         </Select>
       </FormControl>
+
+      <Filter
+        label={"equipment"}
+        activeFilter={type}
+        handler={handleEquipmentFilterChange}
+        listOfValues={equipmentFilterValues}
+      />
     </>
   );
 };

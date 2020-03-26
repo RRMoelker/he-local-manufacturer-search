@@ -14,21 +14,9 @@ import "./DataPage.scss";
 import {API_KEY} from '../../config';
 import {debounce} from 'debounce';
 import * as queries from "../../data/queries";
-import FormControl from "@material-ui/core/FormControl";
-import InputLabel from "@material-ui/core/InputLabel";
-import Select from "@material-ui/core/Select";
-import MenuItem from "@material-ui/core/MenuItem";
 
 const VIEW_TABLE = 'TABLE';
 const VIEW_MAP = 'MAP';
-
-const getEquipmentFilterValues = () => {
-  const equipmentList = [
-    {value: "3d-printer", label: "3D printer"},
-    {value: "cnc", label: "CNC"}
-  ];
-  return equipmentList;
-};
 
 /**
  * Convert hierarchical domain based data to flat format usable in table view.
@@ -51,12 +39,10 @@ const flattenModel = (domainData) => {
 };
 
 const DataPage = () => {
-  const equipmentFilterValues = getEquipmentFilterValues();
   const [rowsData, setRowsData] = useState([]);
   const [view, setView] = useState(VIEW_TABLE);
   const [searchCoords, setSearchCoords] = useState({lat: 0, lng: 0});
   const [searchDistance, setSearchDistance] = useState(1000 * 1000 * 1000); // bigger than earth circumference, in kilometers
-  const [type, setEquipmentType] = useState(equipmentFilterValues[0]);
   const [searchResults, setSearchResults] = useState([]);
 
   // TODO: Vary query depending on inputs
@@ -85,14 +71,6 @@ const DataPage = () => {
     }
   }, [queryResult]);
 
-  function handleEquipmentFilterChange(ev) {
-    const item = equipmentFilterValues.find(
-      item => item.value === ev.target.value
-    );
-    console.log('equipment filter change: ', item);
-    setEquipmentType(item);
-  }
-
   function switchView() {
     setView(view === VIEW_TABLE ? VIEW_MAP : VIEW_TABLE);
   }
@@ -118,25 +96,6 @@ const DataPage = () => {
           setCoords={setSearchCoords}
           distance={searchDistance}
           setDistance={setSearchDistance}
-        />
-
-        <Filter
-          label={"equipment"}
-          activeFilter={type}
-          handler={handleEquipmentFilterChange}
-          listOfValues={equipmentFilterValues}
-        />
-        <Filter
-          label={"equipment"}
-          activeFilter={type}
-          handler={handleEquipmentFilterChange}
-          listOfValues={equipmentFilterValues}
-        />
-        <Filter
-          label={"equipment"}
-          activeFilter={type}
-          handler={handleEquipmentFilterChange}
-          listOfValues={equipmentFilterValues}
         />
       </div>
       <Button onClick={switchView} variant="contained"
