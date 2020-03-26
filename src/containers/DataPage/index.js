@@ -1,21 +1,20 @@
+import PropTypes from 'prop-types';
 import React, {useEffect, useState} from "react";
 import {Paper, Container} from "@material-ui/core";
-import Button from "@material-ui/core/Button";
-import IconButton from '@material-ui/core/IconButton';
-import GpsFixedIcon from '@material-ui/icons/GpsFixed';
+import MapIcon from '@material-ui/icons/Map';
+import TocIcon from '@material-ui/icons/Toc';
+import Tab from "@material-ui/core/Tab";
+import Tabs from "@material-ui/core/Tabs";
+import Typography from "@material-ui/core/Typography";
 import {useQuery} from "urql";
 
 import DataTable from "../../components/DataTable";
 import DataMap from "../../components/DataMap";
-import Filter from "../../components/Filter";
 import SearchBar from "../../components/SearchBar";
 import "./DataPage.scss";
 import {API_KEY} from '../../config';
 import {debounce} from 'debounce';
 import * as queries from "../../data/queries";
-
-const VIEW_TABLE = 'TABLE';
-const VIEW_MAP = 'MAP';
 
 /**
  * Convert hierarchical domain based data to flat format usable in table view.
@@ -37,12 +36,34 @@ const flattenModel = (domainData) => {
   });
 };
 
+function TabPanel(props) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <Typography
+      component="div"
+      role="tabpanel"
+      hidden={value !== index}
+      {...other}
+    >
+      {value === index && <div>{children}</div>}
+    </Typography>
+  );
+}
+
+TabPanel.propTypes = {
+  children: PropTypes.node,
+  index: PropTypes.any.isRequired,
+  value: PropTypes.any.isRequired,
+};
+
 const DataPage = () => {
   const [rowsData, setRowsData] = useState([]);
-  const [view, setView] = useState(VIEW_TABLE);
   const [searchCoords, setSearchCoords] = useState({lat: 0, lng: 0});
   const [searchDistance, setSearchDistance] = useState(1000 * 1000 * 1000); // bigger than earth circumference, in kilometers
   const [searchResults, setSearchResults] = useState([]);
+  const [tabIdx, setTabIdx] = React.useState(0);
+
 
   // TODO: Vary query depending on inputs
   // const [{data: queryResult, fetching, error}] = useQuery({
@@ -70,10 +91,6 @@ const DataPage = () => {
     }
   }, [queryResult]);
 
-  function switchView() {
-    setView(view === VIEW_TABLE ? VIEW_MAP : VIEW_TABLE);
-  }
-
   //TODO: I suggest moving autocomplete logic to SearchBar itself, only passing searchQuery to parent -Ruurd
   const getLocation = debounce(makeRequest, 2000);
   function handleSearch(ev) {
@@ -87,7 +104,6 @@ const DataPage = () => {
   return (
     <Container maxWidth="lg" className="data-page" component={Paper}>
       <div className="data-page__filters">
-
         <SearchBar
           onSearch={handleSearch}
           searchResults={searchResults}
@@ -97,24 +113,30 @@ const DataPage = () => {
           setDistance={setSearchDistance}
         />
       </div>
-      <Button onClick={switchView} variant="contained"
-              color="secondary">{view === VIEW_TABLE ? 'Show map' : 'Show table'}</Button>
 
-      <div>
-        <span>coordinate: </span><span>lat: {searchCoords.lat}, lng: {searchCoords.lng}</span>
-      </div>
+      <Tabs
+        value={tabIdx}
+        indicatorColor="primary"
+        textColor="primary"
+        onChange={(e, value) => setTabIdx(value)}
+        aria-label="Search results view tabs"
+        centered
+      >
+        <Tab icon={<TocIcon />} label="Table" />
+        <Tab icon={<MapIcon />} label="Map" />
+      </Tabs>
 
       <div className="data-page__content">
-        {view === VIEW_TABLE &&
-        <div className="data-page__table">
-          {fetching && <div>Loading...</div>}
-          {!fetching && <DataTable rows={rowsData}/>}
-          {error && <div>{error}</div>}
-        </div>
-        }
-        {view === VIEW_MAP &&
-        <DataMap rows={rowsData}/>
-        }
+        <TabPanel value={tabIdx} index={0}>
+          <div className="data-page__table">
+            {fetching && <div>Loading...</div>}
+            {!fetching && <DataTable rows={rowsData}/>}
+            {error && <div>{error}</div>}
+          </div>
+        </TabPanel>
+        <TabPanel value={tabIdx} index={1}>
+          <DataMap rows={rowsData}/>
+        </TabPanel>
       </div>
     </Container>
   );
