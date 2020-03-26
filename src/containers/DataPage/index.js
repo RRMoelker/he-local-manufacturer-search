@@ -13,29 +13,14 @@ import SearchBar from "../../components/SearchBar";
 import "./DataPage.scss";
 import {API_KEY} from '../../config';
 import {debounce} from 'debounce';
+import * as queries from "../../data/queries";
+import FormControl from "@material-ui/core/FormControl";
+import InputLabel from "@material-ui/core/InputLabel";
+import Select from "@material-ui/core/Select";
+import MenuItem from "@material-ui/core/MenuItem";
 
 const VIEW_TABLE = 'TABLE';
 const VIEW_MAP = 'MAP';
-
-// limit 10 until we get pagination working
-const displayQuery = `
-  query {
-    Entity(limit: 10) {
-      name
-      sites {
-        equipments {
-          brand
-          model
-          quantity
-        }
-        city
-        lat
-        lng
-      }
-      experience
-    }
-  }
-`;
 
 const getEquipmentFilterValues = () => {
   const equipmentList = [
@@ -69,11 +54,28 @@ const DataPage = () => {
   const equipmentFilterValues = getEquipmentFilterValues();
   const [rowsData, setRowsData] = useState([]);
   const [view, setView] = useState(VIEW_TABLE);
-  const [searchCoords, setSearchCoords] = useState();
+  const [searchCoords, setSearchCoords] = useState({lat: 0, lng: 0});
+  const [searchDistance, setSearchDistance] = useState(1000 * 1000 * 1000); // bigger than earth circumference, in kilometers
   const [type, setEquipmentType] = useState(equipmentFilterValues[0]);
   const [searchResults, setSearchResults] = useState([]);
+
+  // TODO: Vary query depending on inputs
+  // const [{data: queryResult, fetching, error}] = useQuery({
+  //   query: queries.displayQuery,
+  //   variables: {
+  //     limit: 10
+  //   }
+  // });
   const [{data: queryResult, fetching, error}] = useQuery({
-    query: displayQuery,
+    query: queries.displaySearchQuery,
+    variables: {
+      limit: 100,
+      distance: searchDistance, // in meters
+      point: {
+        type: "Point",
+        coordinates: [searchCoords.lng, searchCoords.lat]
+      }
+    }
   });
   const geolocationSupported = navigator && navigator.geolocation;
 
@@ -110,14 +112,18 @@ const DataPage = () => {
 
   function useDeviceLocation() {
     navigator.geolocation.getCurrentPosition((position) => {
-      console.log('position: ', position);
+      console.log('position: ', position.coords);
       setSearchCoords({
-        lat: position.latitude,
-        lng: position.longitude,
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
       });
     }, (error) => {
       console.error('could not get device location: ', error.message)
     });
+  }
+
+  function searchDistanceChange(e) {
+    setSearchDistance(e.target.value);
   }
 
   return (
@@ -130,6 +136,23 @@ const DataPage = () => {
             <GpsFixedIcon/>
           </IconButton>
         )}
+
+        <FormControl>
+          <InputLabel id="range-input-label">Range</InputLabel>
+          <Select
+            labelId="range-input-label"
+            id="range-input"
+            value={searchDistance}
+            onChange={searchDistanceChange}
+          >
+            <MenuItem value={10*1000}>10 km</MenuItem>
+            <MenuItem value={100*1000}>100 km</MenuItem>
+            <MenuItem value={250*1000}>250 km</MenuItem>
+            <MenuItem value={1000*1000}>1,000 km</MenuItem>
+            <MenuItem value={5*1000*1000}>5,000 km</MenuItem>
+            <MenuItem value={1000*1000*1000}>100,000,000 km</MenuItem>
+          </Select>
+        </FormControl>
 
         <Filter
           label={"equipment"}
@@ -152,6 +175,10 @@ const DataPage = () => {
       </div>
       <Button onClick={switchView} variant="contained"
               color="secondary">{view === VIEW_TABLE ? 'Show map' : 'Show table'}</Button>
+
+      <div>
+        <span>coordinate: </span><span>lat: {searchCoords.lat}, lng: {searchCoords.lng}</span>
+      </div>
 
       <div className="data-page__content">
         {view === VIEW_TABLE &&
