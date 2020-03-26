@@ -34,7 +34,10 @@ const DataTable = ({ rows }) => {
               <TableCell align="left">Equipment</TableCell>
               <TableCell align="left">Brand</TableCell>
               <TableCell align="left">Model</TableCell>
+              <TableCell align="left">Quantity</TableCell>
+              <TableCell align="left">Country</TableCell>
               <TableCell align="left">City</TableCell>
+              <TableCell align="left">Notes</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -44,7 +47,10 @@ const DataTable = ({ rows }) => {
                 <TableCell align="left">{row.equipment}</TableCell>
                 <TableCell align="left">{row.brand}</TableCell>
                 <TableCell align="left">{row.model}</TableCell>
+                <TableCell align="left">{row.quantity}</TableCell>
+                <TableCell align="left">{row.country}</TableCell>
                 <TableCell align="left">{row.city}</TableCell>
+                <TableCell align="left">{row.notes}</TableCell>
               </TableRow>
             ))}
           </TableBody>
