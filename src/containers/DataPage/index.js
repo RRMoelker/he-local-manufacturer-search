@@ -77,19 +77,13 @@ const DataPage = () => {
       }
     }
   });
-  const geolocationSupported = navigator && navigator.geolocation;
 
   useEffect(() => {
-    // Fired after component mount
     if (queryResult) {
       const flattenedData = flattenModel(queryResult);
       setRowsData(flattenedData);
     }
   }, [queryResult]);
-
-  function handleSearch(ev) {
-    getLocation(ev.target.value);
-  }
 
   function handleEquipmentFilterChange(ev) {
     const item = equipmentFilterValues.find(
@@ -103,56 +97,28 @@ const DataPage = () => {
     setView(view === VIEW_TABLE ? VIEW_MAP : VIEW_TABLE);
   }
 
-  const getLocation = debounce(makeRequest, 2000)
-
+  //TODO: I suggest moving autocomplete logic to SearchBar itself, only passing searchQuery to parent -Ruurd
+  const getLocation = debounce(makeRequest, 2000);
+  function handleSearch(ev) {
+    getLocation(ev.target.value);
+  }
   function makeRequest(searchValue) {
     fetch(`https://maps.googleapis.com/maps/api/geocode/json?component=${searchValue}=${API_KEY}`)
       .then((response) => console.log(response) || setSearchResults(response.results))
   }
 
-  function useDeviceLocation() {
-    navigator.geolocation.getCurrentPosition((position) => {
-      console.log('position: ', position.coords);
-      setSearchCoords({
-        lat: position.coords.latitude,
-        lng: position.coords.longitude,
-      });
-    }, (error) => {
-      console.error('could not get device location: ', error.message)
-    });
-  }
-
-  function searchDistanceChange(e) {
-    setSearchDistance(e.target.value);
-  }
-
   return (
     <Container maxWidth="lg" className="data-page" component={Paper}>
       <div className="data-page__filters">
-        <SearchBar onSearch={handleSearch} searchResults={searchResults}/>
 
-        {geolocationSupported && (
-          <IconButton color="secondary" aria-label="use device location" onClick={useDeviceLocation}>
-            <GpsFixedIcon/>
-          </IconButton>
-        )}
-
-        <FormControl>
-          <InputLabel id="range-input-label">Range</InputLabel>
-          <Select
-            labelId="range-input-label"
-            id="range-input"
-            value={searchDistance}
-            onChange={searchDistanceChange}
-          >
-            <MenuItem value={10*1000}>10 km</MenuItem>
-            <MenuItem value={100*1000}>100 km</MenuItem>
-            <MenuItem value={250*1000}>250 km</MenuItem>
-            <MenuItem value={1000*1000}>1,000 km</MenuItem>
-            <MenuItem value={5*1000*1000}>5,000 km</MenuItem>
-            <MenuItem value={1000*1000*1000}>100,000,000 km</MenuItem>
-          </Select>
-        </FormControl>
+        <SearchBar
+          onSearch={handleSearch}
+          searchResults={searchResults}
+          coords={searchCoords}
+          setCoords={setSearchCoords}
+          distance={searchDistance}
+          setDistance={setSearchDistance}
+        />
 
         <Filter
           label={"equipment"}
