@@ -70,6 +70,7 @@ const SearchBar = ({ onSearch, searchResults, coords, setCoords, distance, setDi
           getOptionLabel={option => option}
           style={{ width: 300 }}
           renderInput={params => <TextField {...params} label="Search" />}
+          disabled
         />
       </FormControl>
 
@@ -87,8 +88,8 @@ const SearchBar = ({ onSearch, searchResults, coords, setCoords, distance, setDi
           value={distance}
           onChange={searchDistanceChange}
         >
-          <MenuItem value={10*1000}>5 km</MenuItem>
           <MenuItem value={10*1000}>10 km</MenuItem>
+          <MenuItem value={10*1000}>25 km</MenuItem>
           <MenuItem value={50*1000}>50 km</MenuItem>
           <MenuItem value={100*1000}>100 km</MenuItem>
           <MenuItem value={250*1000}>250 km</MenuItem>
@@ -103,6 +104,7 @@ const SearchBar = ({ onSearch, searchResults, coords, setCoords, distance, setDi
         activeFilter={type}
         handler={handleEquipmentFilterChange}
         listOfValues={equipmentFilterValues}
+        disabled
       />
     </>
   );

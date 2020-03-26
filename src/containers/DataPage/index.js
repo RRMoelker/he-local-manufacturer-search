@@ -27,12 +27,15 @@ const flattenModel = (domainData) => {
     return {
       entity_pk: entity.pk,
       name: entity.name,
-      brand: firstEquipment.brand,
-      model: firstEquipment.model,
+      notes: entity.notes,
+      country: firstSite.country,
       city: firstSite.city,
       hasLocation: firstSite.lat && firstSite.lng,
       lat: firstSite.lat,
       lng: firstSite.lng,
+      brand: firstEquipment.brand,
+      model: firstEquipment.model,
+      quantity: firstEquipment.quantity,
     };
   });
 };
@@ -103,8 +106,14 @@ const DataPage = () => {
   }
 
   return (
-    <Container maxWidth="lg" className="data-page">
+    <Container maxWidth="xl" className="data-page">
       <Paper className="data-page__container">
+        <p>
+          Work in progress.
+        </p>
+        <p>
+          <b>not all data is imported yet!</b>
+        </p>
         <div className="data-page__filters">
           <SearchBar
             onSearch={handleSearch}
