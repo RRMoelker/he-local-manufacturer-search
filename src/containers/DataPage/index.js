@@ -1,18 +1,39 @@
 import React, { useEffect, useState } from "react";
 import { Paper, Container } from "@material-ui/core";
 import Button from "@material-ui/core/Button";
+import { useQuery } from "urql";
 
 import DataTable from "../../components/DataTable";
 import DataMap from "../../components/DataMap";
 import Filter from "../../components/Filter";
 import SearchBar from "../../components/SearchBar";
-import getData from "../../data/data";
+// import getData from "../../data/data"; //mock data source
 import "./DataPage.scss";
 import { API_KEY } from '../../config';
 import { debounce } from 'debounce';
 
 const VIEW_TABLE = 'TABLE';
 const VIEW_MAP = 'MAP';
+
+// limit 10 until we get pagination working
+const displayQuery = `
+  query {
+    Entity(limit: 10) {
+      name
+      sites {
+        equipments {
+          brand
+          model
+          quantity
+        }
+        city
+        lat
+        lng
+      }
+      experience
+    }
+  }
+`;
 
 const getEquipmentFilterValues = () => {
   const equipmentList = [
@@ -27,29 +48,18 @@ const getEquipmentFilterValues = () => {
  * @param dbData
  */
 const flattenModel = (domainData) => {
-  const flat = [];
-
-  for (const entity of domainData) {
-    const site = entity.sites[0]; // TODO loop
-    const equipment = site.equipments[0]; // TODO loop
-    flat.push({
+  return domainData.Entity.map((entity) => {
+    const firstSite = entity.sites[0];
+    const firstEquipment = firstSite.equipments[0];
+    return {
       name: entity.name,
-      equipment: entity.entity_type,
-      brand: equipment.brand,
-      model: equipment.model,
-      city: site.city,
-      hasLocation: site.lat && site.lng,
-      lat: site.lat,
-      lng: site.lng,
-    });
-  }
-
-  return flat
-};
-
-const requestData = () => {
-  return getData().then(domainData => {
-    return flattenModel(domainData);
+      brand: firstEquipment.brand,
+      model: firstEquipment.model,
+      city: firstSite.city,
+      hasLocation: firstSite.lat && firstSite.lng,
+      lat: firstSite.lat,
+      lng: firstSite.lng,
+    };
   });
 };
 
@@ -58,12 +68,17 @@ const DataPage = () => {
   const [rowsData, setRowsData] = useState([]);
   const [view, setView] = useState(VIEW_TABLE);
   const [type, setEquipmentType] = useState(equipmentFilterValues[0]);
-  const [searchResults, setSearchResults] = useState([])
+  const [searchResults, setSearchResults] = useState([]);
+  const [{ data: queryResult, fetching, error }] = useQuery({
+    query: displayQuery,
+  });
 
   useEffect(() => {
-    // component mounted
-    requestData().then(data => setRowsData(data));
-  }, []);
+    if (queryResult) {
+      const flattenedData = flattenModel(queryResult);
+      setRowsData(flattenedData);
+    }
+  }, [queryResult]);
 
   function handleSearch(ev) {
     getLocation(ev.target.value);
@@ -114,9 +129,11 @@ const DataPage = () => {
       <Button onClick={switchView} variant="contained" color="secondary">{view === VIEW_TABLE ? 'Show map' : 'Show table'}</Button>
 
       <div className="data-page__content">
-        {view === VIEW_TABLE &&
+        { view === VIEW_TABLE &&
           <div className="data-page__table">
-            <DataTable rows={rowsData} />
+            {fetching && <div>Loading...</div>}
+            {!fetching && <DataTable rows={rowsData} />}
+            {error && <div>{error}</div>}
           </div>
         }
         {view === VIEW_MAP &&
