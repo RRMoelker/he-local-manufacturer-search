@@ -2,8 +2,8 @@ import Papa from 'papaparse';
 import PropTypes from 'prop-types';
 
 import { EntityPT } from '../domain';
-import csvPath from '../../local/local_copy-of-3dprinter.csv'; // CSV export of google sheet with same name
-// import csvPath from '../../local/local_copy-of-3dprinter-small-subset.csv'; // CSV export of google sheet with same name
+// import csvPath from '../../local/local_copy-of-3dprinter.csv'; // CSV export of google sheet with same name
+import csvPath from '../../local/local_copy-of-3dprinter-small-subset.csv'; // CSV export of google sheet with same name
 
 /**
  * Fetch data and transforms to format used in app

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import { Paper, Container } from "@material-ui/core";
 import Button from "@material-ui/core/Button";
 
@@ -8,6 +8,8 @@ import Filter from "../../components/Filter";
 import SearchBar from "../../components/SearchBar";
 import getData from "../../data/data";
 import "./DataPage.scss";
+import { API_KEY } from '../../config';
+import { debounce } from 'debounce';
 
 const VIEW_TABLE = 'TABLE';
 const VIEW_MAP = 'MAP';
@@ -56,6 +58,7 @@ const DataPage = () => {
   const [rowsData, setRowsData] = useState([]);
   const [view, setView] = useState(VIEW_TABLE);
   const [type, setEquipmentType] = useState(equipmentFilterValues[0]);
+  const [searchResults, setSearchResults] = useState([])
 
   useEffect(() => {
     // component mounted
@@ -63,7 +66,7 @@ const DataPage = () => {
   }, []);
 
   function handleSearch(ev) {
-    console.log('search: ', ev.target.value);
+    getLocation(ev.target.value);
   }
 
   function handleEquipmentFilterChange(ev) {
@@ -78,10 +81,17 @@ const DataPage = () => {
     setView(view === VIEW_TABLE ? VIEW_MAP : VIEW_TABLE);
   }
 
+  const getLocation = debounce(makeRequest, 2000)
+
+  function makeRequest(searchValue) {
+    fetch(`https://maps.googleapis.com/maps/api/geocode/json?component=${searchValue}=${API_KEY}`)
+      .then((response) => console.log(response) || setSearchResults(response.results))
+  }
+
   return (
     <Container maxWidth="lg" className="data-page" component={Paper}>
       <div className="data-page__filters">
-        <SearchBar onSearch={handleSearch} />
+        <SearchBar onSearch={handleSearch} searchResults={searchResults} />
         <Filter
           label={"equipment"}
           activeFilter={type}
@@ -104,12 +114,12 @@ const DataPage = () => {
       <Button onClick={switchView} variant="contained" color="secondary">{view === VIEW_TABLE ? 'Show map' : 'Show table'}</Button>
 
       <div className="data-page__content">
-        { view === VIEW_TABLE &&
+        {view === VIEW_TABLE &&
           <div className="data-page__table">
             <DataTable rows={rowsData} />
           </div>
         }
-        { view === VIEW_MAP &&
+        {view === VIEW_MAP &&
           <DataMap rows={rowsData} />
         }
       </div>
