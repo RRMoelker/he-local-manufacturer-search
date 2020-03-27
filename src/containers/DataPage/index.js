@@ -9,6 +9,9 @@ import SearchBar from "../../components/SearchBar";
 import getData from "../../data/data";
 import "./DataPage.scss";
 
+import NavBar from "../../components/NavBar";
+import { useAuth0 } from "../../react-auth0-spa";
+
 const VIEW_TABLE = 'TABLE';
 const VIEW_MAP = 'MAP';
 
@@ -77,9 +80,17 @@ const DataPage = () => {
   function switchView() {
     setView(view === VIEW_TABLE ? VIEW_MAP : VIEW_TABLE);
   }
+  const { loading } = useAuth0();
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Container maxWidth="lg" className="data-page" component={Paper}>
+            <header>
+        <NavBar />
+      </header>
       <div className="data-page__filters">
         <SearchBar onSearch={handleSearch} />
         <Filter
