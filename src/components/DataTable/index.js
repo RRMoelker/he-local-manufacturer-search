@@ -53,7 +53,6 @@ const DataTable = ({ rows }) => {
               {
                 rowsToDisplay.map(row => (
                   <TableRow key={row.pk}>
-
                     <TableCell align="left">{row.name}</TableCell>
                     <TableCell align="left">{row.equipment}</TableCell>
                     <TableCell align="left">{row.brand}</TableCell>

@@ -9,7 +9,7 @@ export default (domainData) => {
       pk: site.pk,
       country: site.country,
       city: site.city,
-      hasLocation: site.lat && site.lng,
+      hasLocation: Boolean(site.lat && site.lng),
       lat: site.lat,
       lng: site.lng,
       name: site.entity.name,
