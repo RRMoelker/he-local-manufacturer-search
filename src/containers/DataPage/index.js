@@ -15,6 +15,8 @@ import { useAuth0 } from "../../react-auth0-spa";
 const VIEW_TABLE = 'TABLE';
 const VIEW_MAP = 'MAP';
 
+const AUTH_LOADING_LABEL = 'Waiting for authentication/authorization';
+
 const getEquipmentFilterValues = () => {
   const equipmentList = [
     { value: "3d-printer", label: "3D printer" },
@@ -55,6 +57,7 @@ const requestData = () => {
 };
 
 const DataPage = () => {
+  const { authLoading, isAuthenicated } = useAuth0();
   const equipmentFilterValues = getEquipmentFilterValues();
   const [rowsData, setRowsData] = useState([]);
   const [view, setView] = useState(VIEW_TABLE);
@@ -80,17 +83,15 @@ const DataPage = () => {
   function switchView() {
     setView(view === VIEW_TABLE ? VIEW_MAP : VIEW_TABLE);
   }
-  const { loading } = useAuth0();
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <Container maxWidth="lg" className="data-page" component={Paper}>
-            <header>
+      <header>
         <NavBar />
+        { authLoading && <div>{AUTH_LOADING_LABEL}</div> }
+        <div>is authenticated: {isAuthenicated ? 'true' : 'false'}</div>
       </header>
+
       <div className="data-page__filters">
         <SearchBar onSearch={handleSearch} />
         <Filter

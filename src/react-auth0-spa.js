@@ -1,3 +1,5 @@
+// Based on https://auth0.com/docs/quickstart/spa/react#configure-callback-urls
+// src/react-auth0-spa.js
 import React, { useState, useEffect, useContext } from "react";
 import createAuth0Client from "@auth0/auth0-spa-js";
 
@@ -7,10 +9,10 @@ const DEFAULT_REDIRECT_CALLBACK = () =>
 export const Auth0Context = React.createContext();
 export const useAuth0 = () => useContext(Auth0Context);
 export const Auth0Provider = ({
-  children,
-  onRedirectCallback = DEFAULT_REDIRECT_CALLBACK,
-  ...initOptions
-}) => {
+                                children,
+                                onRedirectCallback = DEFAULT_REDIRECT_CALLBACK,
+                                ...initOptions
+                              }) => {
   const [isAuthenticated, setIsAuthenticated] = useState();
   const [user, setUser] = useState();
   const [auth0Client, setAuth0] = useState();
@@ -23,7 +25,7 @@ export const Auth0Provider = ({
       setAuth0(auth0FromHook);
 
       if (window.location.search.includes("code=") &&
-          window.location.search.includes("state=")) {
+        window.location.search.includes("state=")) {
         const { appState } = await auth0FromHook.handleRedirectCallback();
         onRedirectCallback(appState);
       }
