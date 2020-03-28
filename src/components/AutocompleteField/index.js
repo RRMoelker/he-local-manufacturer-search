@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
 import PlacesAutocomplete from 'react-places-autocomplete';
 import SearchIcon from "@material-ui/icons/Search";
@@ -15,7 +16,7 @@ const AutocompleteField = ({ geoLocatedAddress, handleSelect }) => {
 
   function handleChange(address) {
     setAdress(address)
-  };
+  }
 
   return (
     <div className='field-container'>
@@ -53,6 +54,11 @@ const AutocompleteField = ({ geoLocatedAddress, handleSelect }) => {
       </PlacesAutocomplete>
     </div>
   );
-}
+};
+
+AutocompleteField.propTypes = {
+  // geoLocatedAddress
+  handleSelect: PropTypes.func.isRequired
+};
 
 export default AutocompleteField

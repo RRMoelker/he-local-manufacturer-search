@@ -89,6 +89,8 @@ const DataPage = () => {
           />
         </div>
 
+        <div>Using location: lat: {searchCoords.lat}, lng: {searchCoords.lng}</div>
+
         <Tabs
           value={tabIdx}
           indicatorColor="primary"

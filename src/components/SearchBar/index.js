@@ -28,9 +28,8 @@ const SearchBar = ({ setCoords, distance, setDistance }) => {
   const geolocationSupported = navigator && navigator.geolocation;
 
   function makeReverseGeocodingRequest(lat, lng) {
-    fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${API_KEY}`)
-      .then(response => response.json())
-      .then(data => setAddress(data.results[0].formatted_address));
+    return fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${API_KEY}`)
+      .then(response => response.json());
   }
 
   function useDeviceLocation() {
@@ -41,6 +40,11 @@ const SearchBar = ({ setCoords, distance, setDistance }) => {
         lng: longitude,
       });
       makeReverseGeocodingRequest(latitude, longitude)
+        .then(data => {
+          if (data.results.length >= 0 && data.results[0]) {
+            setAddress(data.results[0].formatted_address)
+          }
+        });
     }, (error) => {
       console.error('could not get device location: ', error.message)
     });
