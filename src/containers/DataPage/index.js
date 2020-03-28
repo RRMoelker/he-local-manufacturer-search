@@ -10,6 +10,7 @@ import getData from "../../data/data";
 import "./DataPage.scss";
 import { API_KEY } from '../../config';
 import { debounce } from 'debounce';
+import AutocompleteField from '../../components/AutocompleteField';
 
 const VIEW_TABLE = 'TABLE';
 const VIEW_MAP = 'MAP';
@@ -91,7 +92,7 @@ const DataPage = () => {
   return (
     <Container maxWidth="lg" className="data-page" component={Paper}>
       <div className="data-page__filters">
-        <SearchBar onSearch={handleSearch} searchResults={searchResults} />
+        <AutocompleteField />
         <Filter
           label={"equipment"}
           activeFilter={type}
@@ -110,8 +111,16 @@ const DataPage = () => {
           handler={handleEquipmentFilterChange}
           listOfValues={equipmentFilterValues}
         />
+        <div className="map-button">
+          <Button
+            onClick={switchView}
+            variant="contained"
+            color="secondary"
+          >
+            {view === VIEW_TABLE ? 'Show map' : 'Show table'}
+          </Button>
+        </div>
       </div>
-      <Button onClick={switchView} variant="contained" color="secondary">{view === VIEW_TABLE ? 'Show map' : 'Show table'}</Button>
 
       <div className="data-page__content">
         {view === VIEW_TABLE &&
