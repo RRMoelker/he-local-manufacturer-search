@@ -2,6 +2,12 @@
   padding-top: 2rem;
   padding-bottom: 1rem;
   width: 30%;
+  &__gps-icon {
+    height: 2rem;
+    width: 2rem;
+    padding: 0;
+  }
   &__input {
+    display: flex;
   }
 }
