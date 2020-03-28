@@ -11,6 +11,7 @@ import "./DataPage.scss";
 import { API_KEY } from '../../config';
 import { debounce } from 'debounce';
 import AutocompleteField from '../../components/AutocompleteField';
+import { GoogleApiWrapper } from 'google-maps-react';
 
 const VIEW_TABLE = 'TABLE';
 const VIEW_MAP = 'MAP';
@@ -136,4 +137,8 @@ const DataPage = () => {
   );
 };
 
-export default DataPage;
+export default GoogleApiWrapper(
+  (props) => ({
+    apiKey: API_KEY,
+  }
+  ))(DataPage)
