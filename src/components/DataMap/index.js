@@ -26,7 +26,7 @@ function DataMap({rows}) {
           {markers.map(row =>
             <CircleMarker center={[row.lat, row.lng]}
               radius={2}
-              key={row.name}
+              key={row.pk}
               onClick={() => {
                 setSelectedMarker(row);
                 setIsDetailModalOpen(true)
