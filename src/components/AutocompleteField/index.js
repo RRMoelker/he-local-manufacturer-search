@@ -6,7 +6,7 @@ import { Input, InputAdornment } from '@material-ui/core';
 import './AutoCompleteField.scss'
 
 const AutocompleteField = ({ geoLocatedAddress, handleSelect }) => {
-  const [address, setAdress] = useState();
+  const [address, setAdress] = useState('');
 
   useEffect(() => {
     if (geoLocatedAddress) {
