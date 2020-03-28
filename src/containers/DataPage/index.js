@@ -1,138 +1,136 @@
 import React, { useEffect, useState } from "react";
-import { Paper, Container } from "@material-ui/core";
-import Button from "@material-ui/core/Button";
+import { Paper, Container, Button } from "@material-ui/core";
+import PropTypes from 'prop-types';
+import MapIcon from '@material-ui/icons/Map';
+import TocIcon from '@material-ui/icons/Toc';
+import Tab from "@material-ui/core/Tab";
+import Tabs from "@material-ui/core/Tabs";
+import Typography from "@material-ui/core/Typography";
+import { useQuery } from "urql";
+import { debounce } from 'debounce';
 
 import DataTable from "../../components/DataTable";
 import DataMap from "../../components/DataMap";
-import Filter from "../../components/Filter";
 import SearchBar from "../../components/SearchBar";
-import getData from "../../data/data";
-import "./DataPage.scss";
 import { API_KEY } from '../../config';
-import { debounce } from 'debounce';
+import * as queries from "../../data/queries";
+import searchQueryDataDisplayAdapter from './searchQueryDataDisplayAdapter';
 import AutocompleteField from '../../components/AutocompleteField';
 import { GoogleApiWrapper } from 'google-maps-react';
 
-const VIEW_TABLE = 'TABLE';
-const VIEW_MAP = 'MAP';
+import "./DataPage.scss";
 
-const getEquipmentFilterValues = () => {
-  const equipmentList = [
-    { value: "3d-printer", label: "3D printer" },
-    { value: "cnc", label: "CNC" }
-  ];
-  return equipmentList;
-};
+function TabPanel(props) {
+  const { children, value, index, ...other } = props;
 
-/**
- * Convert hierarchical domain based data to flat format usable in table view.
- * @param dbData
- */
-const flattenModel = (domainData) => {
-  const flat = [];
+  return (
+    <Typography
+      component="div"
+      role="tabpanel"
+      hidden={value !== index}
+      {...other}
+    >
+      {value === index && <div>{children}</div>}
+    </Typography>
+  );
+}
 
-  for (const entity of domainData) {
-    const site = entity.sites[0]; // TODO loop
-    const equipment = site.equipments[0]; // TODO loop
-    flat.push({
-      name: entity.name,
-      equipment: entity.entity_type,
-      brand: equipment.brand,
-      model: equipment.model,
-      city: site.city,
-      hasLocation: site.lat && site.lng,
-      lat: site.lat,
-      lng: site.lng,
-    });
-  }
-
-  return flat
-};
-
-const requestData = () => {
-  return getData().then(domainData => {
-    return flattenModel(domainData);
-  });
+TabPanel.propTypes = {
+  children: PropTypes.node,
+  index: PropTypes.any.isRequired,
+  value: PropTypes.any.isRequired,
 };
 
 const DataPage = () => {
-  const equipmentFilterValues = getEquipmentFilterValues();
   const [rowsData, setRowsData] = useState([]);
-  const [view, setView] = useState(VIEW_TABLE);
-  const [type, setEquipmentType] = useState(equipmentFilterValues[0]);
-  const [searchResults, setSearchResults] = useState([])
+  const [searchCoords, setSearchCoords] = useState({ lat: 0, lng: 0 });
+  const [searchDistance, setSearchDistance] = useState(1000 * 1000 * 1000); // bigger than earth circumference, in kilometers
+  const [searchResults, setSearchResults] = useState([]);
+  const [tabIdx, setTabIdx] = React.useState(0);
+
+  // TODO: Vary query depending on inputs
+  // const [{data: queryResult, fetching, error}] = useQuery({
+  //   query: queries.displayQuery,
+  //   variables: {
+  //     limit: 10
+  //   }
+  // });
+  const [{ data: queryResult, fetching, error }] = useQuery({
+    query: queries.displaySearchQuery,
+    variables: {
+      limit: 100,
+      distance: searchDistance, // in meters
+      point: {
+        type: "Point",
+        coordinates: [searchCoords.lng, searchCoords.lat]
+      }
+    }
+  });
 
   useEffect(() => {
-    // component mounted
-    requestData().then(data => setRowsData(data));
-  }, []);
+    if (queryResult) {
+      const formattedRowsData = searchQueryDataDisplayAdapter(queryResult);
+      setRowsData(formattedRowsData);
+    }
+  }, [queryResult]);
 
+  //TODO: I suggest moving autocomplete logic to SearchBar itself, only passing searchQuery to parent -Ruurd
+  const getLocation = debounce(makeRequest, 2000);
   function handleSearch(ev) {
     getLocation(ev.target.value);
   }
-
-  function handleEquipmentFilterChange(ev) {
-    const item = equipmentFilterValues.find(
-      item => item.value === ev.target.value
-    );
-    console.log('equipment filter change: ', item);
-    setEquipmentType(item);
-  }
-
-  function switchView() {
-    setView(view === VIEW_TABLE ? VIEW_MAP : VIEW_TABLE);
-  }
-
-  const getLocation = debounce(makeRequest, 2000)
-
   function makeRequest(searchValue) {
     fetch(`https://maps.googleapis.com/maps/api/geocode/json?component=${searchValue}=${API_KEY}`)
       .then((response) => console.log(response) || setSearchResults(response.results))
   }
 
-  return (
-    <Container maxWidth="lg" className="data-page" component={Paper}>
-      <div className="data-page__filters">
-        <AutocompleteField />
-        <Filter
-          label={"equipment"}
-          activeFilter={type}
-          handler={handleEquipmentFilterChange}
-          listOfValues={equipmentFilterValues}
-        />
-        <Filter
-          label={"equipment"}
-          activeFilter={type}
-          handler={handleEquipmentFilterChange}
-          listOfValues={equipmentFilterValues}
-        />
-        <Filter
-          label={"equipment"}
-          activeFilter={type}
-          handler={handleEquipmentFilterChange}
-          listOfValues={equipmentFilterValues}
-        />
-        <div className="map-button">
-          <Button
-            onClick={switchView}
-            variant="contained"
-            color="secondary"
-          >
-            {view === VIEW_TABLE ? 'Show map' : 'Show table'}
-          </Button>
-        </div>
-      </div>
 
-      <div className="data-page__content">
-        {view === VIEW_TABLE &&
-          <div className="data-page__table">
-            <DataTable rows={rowsData} />
-          </div>
-        }
-        {view === VIEW_MAP &&
-          <DataMap rows={rowsData} />
-        }
-      </div>
+  return (
+    <Container maxWidth="xl" className="data-page">
+      <Paper className="data-page__container">
+        <AutocompleteField />
+        <p>
+          Work in progress.
+        </p>
+        <p>
+          <b>not all data is imported yet!</b>
+        </p>
+        <div className="data-page__filters">
+          <SearchBar
+            onSearch={handleSearch}
+            searchResults={searchResults}
+            coords={searchCoords}
+            setCoords={setSearchCoords}
+            distance={searchDistance}
+            setDistance={setSearchDistance}
+          />
+        </div>
+
+        <Tabs
+          value={tabIdx}
+          indicatorColor="primary"
+          textColor="primary"
+          onChange={(e, value) => setTabIdx(value)}
+          aria-label="Search results view tabs"
+          centered
+        >
+          <Tab label={<><TocIcon fontSize="inherit" /><div className="custom-tab-label">Table</div></>} />
+          <Tab label={<><MapIcon fontSize="inherit" /><div className="custom-tab-label">Map</div></>} />
+        </Tabs>
+
+        <div className="data-page__content">
+          <TabPanel value={tabIdx} index={0}>
+            <div className="data-page__table">
+              {fetching && <div>Loading...</div>}
+              {!fetching && <DataTable rows={rowsData} />}
+              {error && <div>{error}</div>}
+            </div>
+          </TabPanel>
+          <TabPanel value={tabIdx} index={1}>
+            <DataMap rows={rowsData} />
+          </TabPanel>
+        </div>
+      </Paper>
     </Container>
   );
 };
