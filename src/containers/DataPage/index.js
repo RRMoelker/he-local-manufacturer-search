@@ -11,10 +11,8 @@ import { useQuery } from "urql";
 import DataTable from "../../components/DataTable";
 import DataMap from "../../components/DataMap";
 import SearchBar from "../../components/SearchBar";
-import { API_KEY } from '../../config';
 import * as queries from "../../data/queries";
 import searchQueryDataDisplayAdapter from './searchQueryDataDisplayAdapter';
-import { GoogleApiWrapper } from 'google-maps-react';
 
 import "./DataPage.scss";
 
@@ -80,13 +78,12 @@ const DataPage = () => {
         <p>
           <b>not all data is imported yet!</b>
         </p>
-        <div className="data-page__filters">
-          <SearchBar
-            setCoords={setSearchCoords}
-            distance={searchDistance}
-            setDistance={setSearchDistance}
-          />
-        </div>
+
+        <SearchBar
+          setCoords={setSearchCoords}
+          distance={searchDistance}
+          setDistance={setSearchDistance}
+        />
 
         <div>Using location: lat: {searchCoords.lat}, lng: {searchCoords.lng}</div>
 
@@ -119,12 +116,4 @@ const DataPage = () => {
   );
 };
 
-const wrapper = GoogleApiWrapper(
-  (props) => ({
-      apiKey: API_KEY,
-    }
-))(DataPage);
-
-wrapper.displayName = 'GoogleApiWrapper';
-
-export default wrapper;
+export default DataPage;

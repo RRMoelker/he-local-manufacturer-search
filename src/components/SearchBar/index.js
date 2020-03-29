@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import {
-  FormControl,
-} from "@material-ui/core";
-import "./SearchBar.scss";
+import { geocodeByAddress, getLatLng } from 'react-places-autocomplete';
+import { FormControl } from "@material-ui/core";
+import { GoogleApiWrapper } from "google-maps-react";
 import IconButton from "@material-ui/core/IconButton";
 import GpsFixedIcon from "@material-ui/icons/GpsFixed";
 import InputLabel from "@material-ui/core/InputLabel";
@@ -11,7 +10,7 @@ import MenuItem from "@material-ui/core/MenuItem";
 import Filter from "../Filter";
 import AutocompleteField from '../AutocompleteField';
 import { API_KEY } from '../../config';
-import { geocodeByAddress, getLatLng } from 'react-places-autocomplete';
+import "./SearchBar.scss";
 
 const getEquipmentFilterValues = () => {
   const equipmentList = [
@@ -78,7 +77,7 @@ const SearchBar = ({ setCoords, distance, setDistance }) => {
   };
 
   return (
-    <>
+    <div className="search-bar__filters">
       <div className="search-bar__input">
         <AutocompleteField geoLocatedAddress={address} handleSelect={handleSelectAddress} />
         {geolocationSupported && (
@@ -118,8 +117,16 @@ const SearchBar = ({ setCoords, distance, setDistance }) => {
         listOfValues={equipmentFilterValues}
         disabled
       />
-    </>
+    </div>
   );
 };
 
-export default SearchBar;
+const wrapper = GoogleApiWrapper(
+  (props) => ({
+      apiKey: API_KEY,
+    }
+  ))(SearchBar);
+
+wrapper.displayName = 'GoogleApiWrapper';
+
+export default wrapper;

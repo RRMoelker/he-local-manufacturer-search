@@ -1,13 +1,6 @@
 .data-page {
   margin-top: 1rem;
 
-  &__filters {
-    height: 15vh; // TODO: get rid of this fixed height
-    display: flex;
-    justify-content: space-around;
-    align-items: top;
-    padding-top: 1rem;
-  }
   &__content {
   }
 
