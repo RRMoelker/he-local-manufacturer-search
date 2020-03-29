@@ -1,6 +1,7 @@
 import React from "react";
-import { useAuth0 } from "../../auth/react-auth0-spa";
 import Button from "@material-ui/core/Button";
+import { useAuth0 } from "../../auth/react-auth0-spa";
+import './NavBar.scss';
 
 const AUTH_LOADING_LABEL = 'Waiting for authentication/authorization';
 
@@ -8,7 +9,7 @@ const NavBar = () => {
   const { loading: authLoading, isAuthenticated, loginWithRedirect, logout } = useAuth0();
 
   return (
-    <div>
+    <div className="nav-bar">
       {!isAuthenticated && (
         <Button onClick={() => loginWithRedirect({})} variant="contained" color="primary">Log in</Button>
       )}
@@ -17,7 +18,11 @@ const NavBar = () => {
 
       { authLoading && <div>{AUTH_LOADING_LABEL}</div> }
 
-      <div>is authenticated: {isAuthenticated ? 'true' : 'false'}</div>
+      <div>
+        Work in progress. <b>not all data is imported yet!</b>
+      </div>
+
+      <div>Is authenticated: {isAuthenticated ? 'true' : 'false'}</div>
     </div>
   );
 };

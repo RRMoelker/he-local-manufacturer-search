@@ -7,3 +7,4 @@ export const apiAudienceIdentifier = 'HasuraLink';
 export const API_KEY = '';
 export const GRAPHQL_ENDPOINT = 'https://hasura-test-manufacturers-db.herokuapp.com/v1/graphql';
 
+export const PROJECT_SLACK_CHANNEL = '#project-manufacturer-database';

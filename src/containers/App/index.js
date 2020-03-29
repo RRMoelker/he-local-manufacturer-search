@@ -24,18 +24,18 @@ const createUrqlClient = (token) => {
 };
 
 function App() {
-  const { loading: authLoading, getTokenSilently, isAuthenicated } = useAuth0();
+  const { loading: authLoading, getTokenSilently, isAuthenticated } = useAuth0();
   const [ urqlClient, setUrqlClient ] = useState(createUrqlClient());
 
   useEffect(() => {
     // updated client with token authorization when authentication is loaded.
-    if(authLoading == false) {
+    if(authLoading === false && isAuthenticated) {
       getTokenSilently().then(token => {
         console.log('setting token');
         setUrqlClient(createUrqlClient(token));
       });
     }
-  }, [authLoading]);
+  }, [authLoading, isAuthenticated, getTokenSilently]);
 
   if (authLoading) {
     // Many auth0 calls will fail until loaded, for example getTokenSilently will fail.
