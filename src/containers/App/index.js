@@ -1,28 +1,57 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import { createClient, Provider } from 'urql';
 
 import DataPage from "../DataPage";
 import "./App.scss";
 import {GRAPHQL_ENDPOINT} from "../../config";
-import {useAuth0} from "../../react-auth0-spa";
+import {useAuth0} from "../../auth/react-auth0-spa";
 import NavBar from "../../components/NavBar";
+import {Container, Paper} from "@material-ui/core";
 
-const AUTH_LOADING_LABEL = 'Waiting for authentication/authorization';
-
-const client = createClient({
-  url: GRAPHQL_ENDPOINT,
-});
+const createUrqlClient = (token) => {
+  // Adding token to requests, bit of work because we can't use an async function for fetchOptions. The function must be synchronous.
+  return createClient({
+    url: GRAPHQL_ENDPOINT,
+    fetchOptions: () => {
+      if (token) {
+        return {
+          headers: { authorization: token ? `Bearer ${token}` : '' }
+        };
+      }
+      return {};
+    },
+  });
+};
 
 function App() {
-  const { authLoading, isAuthenicated } = useAuth0();
+  const { loading: authLoading, getTokenSilently, isAuthenicated } = useAuth0();
+  const [ urqlClient, setUrqlClient ] = useState(createUrqlClient());
+
+  useEffect(() => {
+    // updated client with token authorization when authentication is loaded.
+    if(authLoading == false) {
+      getTokenSilently().then(token => {
+        console.log('setting token');
+        setUrqlClient(createUrqlClient(token));
+      });
+    }
+  }, [authLoading]);
+
+  if (authLoading) {
+    // Many auth0 calls will fail until loaded, for example getTokenSilently will fail.
+    return <div>Loading authentication...</div>;
+  }
+
   return (
-    <Provider value={client}>
-      <header>
-        <NavBar />
-        { authLoading && <div>{AUTH_LOADING_LABEL}</div> }
-        <div>is authenticated: {isAuthenicated ? 'true' : 'false'}</div>
-      </header>
-      <DataPage />
+    <Provider value={urqlClient}>
+      <Container maxWidth="xl">
+        <Paper>
+          <header>
+            <NavBar />
+          </header>
+          <DataPage />
+        </Paper>
+      </Container>
     </Provider>
   );
 };

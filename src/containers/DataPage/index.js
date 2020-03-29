@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types';
 import React, {useEffect, useState} from "react";
-import {Paper, Container} from "@material-ui/core";
 import MapIcon from '@material-ui/icons/Map';
 import TocIcon from '@material-ui/icons/Toc';
 import Tab from "@material-ui/core/Tab";
@@ -16,6 +15,7 @@ import {API_KEY} from '../../config';
 import * as queries from "../../data/queries";
 import searchQueryDataDisplayAdapter from './searchQueryDataDisplayAdapter';
 import "./DataPage.scss";
+import {useAuth0} from "../../auth/react-auth0-spa";
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -39,21 +39,15 @@ TabPanel.propTypes = {
 };
 
 const DataPage = () => {
+  const { isAuthenticated } = useAuth0();
   const [rowsData, setRowsData] = useState([]);
   const [searchCoords, setSearchCoords] = useState({lat: 0, lng: 0});
   const [searchDistance, setSearchDistance] = useState(1000 * 1000 * 1000); // bigger than earth circumference, in kilometers
   const [searchResults, setSearchResults] = useState([]);
   const [tabIdx, setTabIdx] = React.useState(0);
 
-  // TODO: Vary query depending on inputs
-  // const [{data: queryResult, fetching, error}] = useQuery({
-  //   query: queries.displayQuery,
-  //   variables: {
-  //     limit: 10
-  //   }
-  // });
-  const [{data: queryResult, fetching, error}] = useQuery({
-    query: queries.displaySearchQuery,
+  const [{data: queryResult, fetching, error: queryError}] = useQuery({
+    query: isAuthenticated ? queries.displayAuthSearchQuery : queries.displaySearchQuery,
     variables: {
       limit: 100,
       distance: searchDistance, // in meters
@@ -65,7 +59,7 @@ const DataPage = () => {
   });
 
   useEffect(() => {
-    if (queryResult) {
+    if (queryResult && !queryError) {
       const formattedRowsData = searchQueryDataDisplayAdapter(queryResult);
       setRowsData(formattedRowsData);
     }
@@ -82,51 +76,49 @@ const DataPage = () => {
   }
 
   return (
-    <Container maxWidth="xl" className="data-page">
-      <Paper className="data-page__container">
-        <p>
-          Work in progress.
-        </p>
-        <p>
-          <b>not all data is imported yet!</b>
-        </p>
-        <div className="data-page__filters">
-          <SearchBar
-            onSearch={handleSearch}
-            searchResults={searchResults}
-            coords={searchCoords}
-            setCoords={setSearchCoords}
-            distance={searchDistance}
-            setDistance={setSearchDistance}
-          />
-        </div>
+    <div className="data-page">
+      <p>
+        Work in progress.
+      </p>
+      <p>
+        <b>not all data is imported yet!</b>
+      </p>
+      <div className="data-page__filters">
+        <SearchBar
+          onSearch={handleSearch}
+          searchResults={searchResults}
+          coords={searchCoords}
+          setCoords={setSearchCoords}
+          distance={searchDistance}
+          setDistance={setSearchDistance}
+        />
+      </div>
 
-        <Tabs
-          value={tabIdx}
-          indicatorColor="primary"
-          textColor="primary"
-          onChange={(e, value) => setTabIdx(value)}
-          aria-label="Search results view tabs"
-          centered
-        >
-          <Tab label={<><TocIcon fontSize="inherit" /><div className="custom-tab-label">Table</div></>} />
-          <Tab label={<><MapIcon fontSize="inherit" /><div className="custom-tab-label">Map</div></>} />
-        </Tabs>
+      <Tabs
+        value={tabIdx}
+        indicatorColor="primary"
+        textColor="primary"
+        onChange={(e, value) => setTabIdx(value)}
+        aria-label="Search results view tabs"
+        centered
+      >
+        <Tab label={<><TocIcon fontSize="inherit" /><div className="custom-tab-label">Table</div></>} />
+        <Tab label={<><MapIcon fontSize="inherit" /><div className="custom-tab-label">Map</div></>} />
+      </Tabs>
 
-        <div className="data-page__content">
-          <TabPanel value={tabIdx} index={0}>
-            <div className="data-page__table">
-              {fetching && <div>Loading...</div>}
-              {!fetching && <DataTable rows={rowsData}/>}
-              {error && <div>{error}</div>}
-            </div>
-          </TabPanel>
-          <TabPanel value={tabIdx} index={1}>
-            <DataMap rows={rowsData}/>
-          </TabPanel>
-        </div>
-      </Paper>
-    </Container>
+      <div className="data-page__content">
+        <TabPanel value={tabIdx} index={0}>
+          <div className="data-page__table">
+            {fetching && <div>Loading...</div>}
+            {!fetching && <DataTable rows={rowsData}/>}
+            {queryError && <div>{JSON.stringify(queryError)}</div>}
+          </div>
+        </TabPanel>
+        <TabPanel value={tabIdx} index={1}>
+          <DataMap rows={rowsData}/>
+        </TabPanel>
+      </div>
+    </div>
   );
 };
 

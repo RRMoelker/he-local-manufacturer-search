@@ -1,16 +1,23 @@
 import React from "react";
-import { useAuth0 } from "../../react-auth0-spa";
+import { useAuth0 } from "../../auth/react-auth0-spa";
+import Button from "@material-ui/core/Button";
+
+const AUTH_LOADING_LABEL = 'Waiting for authentication/authorization';
 
 const NavBar = () => {
-  const { isAuthenticated, loginWithRedirect, logout } = useAuth0();
+  const { loading: authLoading, isAuthenticated, loginWithRedirect, logout } = useAuth0();
 
   return (
     <div>
       {!isAuthenticated && (
-        <button onClick={() => loginWithRedirect({})}>Log in</button>
+        <Button onClick={() => loginWithRedirect({})} variant="contained" color="primary">Log in</Button>
       )}
 
-      {isAuthenticated && <button onClick={() => logout()}>Log out</button>}
+      {isAuthenticated && <Button onClick={() => logout()} variant="contained" color="primary">Log out</Button>}
+
+      { authLoading && <div>{AUTH_LOADING_LABEL}</div> }
+
+      <div>is authenticated: {isAuthenticated ? 'true' : 'false'}</div>
     </div>
   );
 };
