@@ -72,52 +72,50 @@ const DataPage = () => {
   }, [queryResult]);
 
   return (
-    <React.StrictMode>
-      <Container maxWidth="xl" className="data-page">
-        <Paper className="data-page__container">
-          <p>
-            Work in progress.
-          </p>
-          <p>
-            <b>not all data is imported yet!</b>
-          </p>
-          <div className="data-page__filters">
-            <SearchBar
-              setCoords={setSearchCoords}
-              distance={searchDistance}
-              setDistance={setSearchDistance}
-            />
-          </div>
+    <Container maxWidth="xl" className="data-page">
+      <Paper className="data-page__container">
+        <p>
+          Work in progress.
+        </p>
+        <p>
+          <b>not all data is imported yet!</b>
+        </p>
+        <div className="data-page__filters">
+          <SearchBar
+            setCoords={setSearchCoords}
+            distance={searchDistance}
+            setDistance={setSearchDistance}
+          />
+        </div>
 
-          <div>Using location: lat: {searchCoords.lat}, lng: {searchCoords.lng}</div>
+        <div>Using location: lat: {searchCoords.lat}, lng: {searchCoords.lng}</div>
 
-          <Tabs
-            value={tabIdx}
-            indicatorColor="primary"
-            textColor="primary"
-            onChange={(e, value) => setTabIdx(value)}
-            aria-label="Search results view tabs"
-            centered
-          >
-            <Tab label={<><TocIcon fontSize="inherit" /><div className="custom-tab-label">Table</div></>} />
-            <Tab label={<><MapIcon fontSize="inherit" /><div className="custom-tab-label">Map</div></>} />
-          </Tabs>
+        <Tabs
+          value={tabIdx}
+          indicatorColor="primary"
+          textColor="primary"
+          onChange={(e, value) => setTabIdx(value)}
+          aria-label="Search results view tabs"
+          centered
+        >
+          <Tab label={<><TocIcon fontSize="inherit" /><div className="custom-tab-label">Table</div></>} />
+          <Tab label={<><MapIcon fontSize="inherit" /><div className="custom-tab-label">Map</div></>} />
+        </Tabs>
 
-          <div className="data-page__content">
-            <TabPanel value={tabIdx} index={0}>
-              <div className="data-page__table">
-                {fetching && <div>Loading...</div>}
-                {!fetching && <DataTable rows={rowsData} />}
-                {error && <div>{error}</div>}
-              </div>
-            </TabPanel>
-            <TabPanel value={tabIdx} index={1}>
-              <DataMap rows={rowsData} searchCoords={searchCoords} />
-            </TabPanel>
-          </div>
-        </Paper>
-      </Container>
-    </React.StrictMode>
+        <div className="data-page__content">
+          <TabPanel value={tabIdx} index={0}>
+            <div className="data-page__table">
+              {fetching && <div>Loading...</div>}
+              {!fetching && <DataTable rows={rowsData} />}
+              {error && <div>{error}</div>}
+            </div>
+          </TabPanel>
+          <TabPanel value={tabIdx} index={1}>
+            <DataMap rows={rowsData} searchCoords={searchCoords} />
+          </TabPanel>
+        </div>
+      </Paper>
+    </Container>
   );
 };
 
