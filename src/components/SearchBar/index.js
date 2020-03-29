@@ -43,6 +43,8 @@ const SearchBar = ({ setCoords, distance, setDistance }) => {
         .then(data => {
           if (data.results.length >= 0 && data.results[0]) {
             setAddress(data.results[0].formatted_address)
+          } else {
+            console.error('reverse geocoding request failed, no good results for coordinate');
           }
         });
     }, (error) => {

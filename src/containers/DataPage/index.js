@@ -112,7 +112,7 @@ const DataPage = () => {
               </div>
             </TabPanel>
             <TabPanel value={tabIdx} index={1}>
-              <DataMap rows={rowsData} />
+              <DataMap rows={rowsData} searchCoords={searchCoords} />
             </TabPanel>
           </div>
         </Paper>
