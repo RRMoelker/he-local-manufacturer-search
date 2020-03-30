@@ -7,13 +7,25 @@ import {
   TableRow,
   TableHead,
   TableBody,
-  TablePagination,
-  Typography
+  TablePagination
 } from "@material-ui/core";
 
 import "./DataTable.scss";
+import {ADDITIONAL_AUTHORIZATION_LABEL} from "../../labels";
 
-const NO_RESULTS_LABEL = 'No results match your search criteria.'
+const NO_RESULTS_LABEL = 'No results match your search criteria.';
+
+const breakUpString = (string, delimiter=';') => {
+  if (string) {
+    const parts = string.split(delimiter);
+    return (
+      <>
+        {parts.map(part => <div key={part.substring(0, 8)}>{part}</div>)}
+      </>
+    );
+  }
+  return '';
+}
 
 const DataTable = ({ rows }) => {
   const [page, setPage] = useState(0);
@@ -38,13 +50,16 @@ const DataTable = ({ rows }) => {
           <TableHead>
             <TableRow>
               <TableCell align="left">Name</TableCell>
-              <TableCell align="left">Equipment</TableCell>
-              <TableCell align="left">Brand</TableCell>
+              {/*<TableCell align="left">Equipment</TableCell>*/}
+              {/*<TableCell align="left">Brand</TableCell>*/}
               <TableCell align="left">Model</TableCell>
               <TableCell align="left">Quantity</TableCell>
-              <TableCell align="left">Country</TableCell>
               <TableCell align="left">City</TableCell>
+              <TableCell align="left">Country</TableCell>
+              <TableCell align="left">Experience</TableCell>
               <TableCell align="left">Notes</TableCell>
+              <TableCell align="left" title={ADDITIONAL_AUTHORIZATION_LABEL}>Slack*</TableCell>
+              <TableCell align="left" title={ADDITIONAL_AUTHORIZATION_LABEL}>Email*</TableCell>
             </TableRow>
           </TableHead>
           {rowsToDisplay.length > 0
@@ -54,19 +69,29 @@ const DataTable = ({ rows }) => {
                 rowsToDisplay.map(row => (
                   <TableRow key={row.pk}>
                     <TableCell align="left">{row.name}</TableCell>
-                    <TableCell align="left">{row.equipment}</TableCell>
-                    <TableCell align="left">{row.brand}</TableCell>
+                    {/*<TableCell align="left">{row.equipment}</TableCell>*/}
+                    {/*<TableCell align="left">{row.brand}</TableCell>*/}
                     <TableCell align="left">{row.model}</TableCell>
                     <TableCell align="left">{row.quantity}</TableCell>
-                    <TableCell align="left">{row.country}</TableCell>
                     <TableCell align="left">{row.city}</TableCell>
-                    <TableCell align="left">{row.notes}</TableCell>
+                    <TableCell align="left">{row.country}</TableCell>
+                    <TableCell align="left">{breakUpString(row.experience)}</TableCell>
+                    <TableCell align="left">{breakUpString(row.notes)}</TableCell>
+                    <TableCell align="left">{row.slack_handle}</TableCell>
+                    <TableCell align="left">{row.email}</TableCell>
                   </TableRow>
                 ))
               }
             </TableBody>
             :
-            <Typography variant='body1' className='table__message'> {NO_RESULTS_LABEL} </Typography>}
+            <TableBody>
+              {
+                <TableRow>
+                  <TableCell align="center" colSpan="8">{NO_RESULTS_LABEL}</TableCell>
+                </TableRow>
+              }
+            </TableBody>
+        }
         </Table>
       </TableContainer>
       <TablePagination

@@ -1,40 +1,54 @@
-import React, {useState} from "react";
-import {
-  Input,
-  InputAdornment,
-  FormControl,
-  TextField
-} from "@material-ui/core";
-import { Autocomplete } from "@material-ui/lab"
-import "./SearchBar.scss";
-import SearchIcon from "@material-ui/icons/Search";
+import PropTypes from 'prop-types';
+import React, { useState } from "react";
+import { geocodeByAddress, getLatLng } from 'react-places-autocomplete';
+import {FormControl, FormGroup} from "@material-ui/core";
+import { GoogleApiWrapper } from "google-maps-react";
 import IconButton from "@material-ui/core/IconButton";
 import GpsFixedIcon from "@material-ui/icons/GpsFixed";
 import InputLabel from "@material-ui/core/InputLabel";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
-import Filter from "../Filter";
+import AutocompleteField from '../AutocompleteField';
+import { API_KEY } from '../../config';
+import "./SearchBar.scss";
+import TextField from "@material-ui/core/TextField";
 
-const getEquipmentFilterValues = () => {
-  const equipmentList = [
-    {value: "3d-printer", label: "3D printer"},
-    {value: "cnc", label: "CNC"}
-  ];
-  return equipmentList;
-};
+// const getEquipmentFilterValues = () => {
+//   const equipmentList = [
+//     { value: "3d-printer", label: "3D printer" },
+//     { value: "cnc", label: "CNC" }
+//   ];
+//   return equipmentList;
+// };
 
-const SearchBar = ({ onSearch, searchResults, coords, setCoords, distance, setDistance}) => {
-  const equipmentFilterValues = getEquipmentFilterValues();
-  const [type, setEquipmentType] = useState(equipmentFilterValues[0]);
+function makeReverseGeocodingRequest(lat, lng) {
+  return fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${API_KEY}`)
+    .then(response => response.json());
+}
+
+const SearchBar = ({ coords, setCoords, distance, setDistance }) => {
+  // const equipmentFilterValues = getEquipmentFilterValues();
+  // const [type, setEquipmentType] = useState(equipmentFilterValues[0]); // Currently disabled because we can't filter on this yet in the database.
+  const [address, setAddress] = useState();
+  const [usingLocation, setUseLocation]  = useState(false)
   const geolocationSupported = navigator && navigator.geolocation;
 
   function useDeviceLocation() {
     navigator.geolocation.getCurrentPosition((position) => {
-      console.log('position: ', position.coords);
+      const { latitude, longitude } = position.coords;
       setCoords({
-        lat: position.coords.latitude,
-        lng: position.coords.longitude,
+        lat: latitude,
+        lng: longitude,
       });
+      setUseLocation(true);
+      makeReverseGeocodingRequest(latitude, longitude)
+        .then(data => {
+          if (data.results.length >= 0 && data.results[0]) {
+            setAddress(data.results[0].formatted_address)
+          } else {
+            console.error('reverse geocoding request failed, no good results for coordinate');
+          }
+        });
     }, (error) => {
       console.error('could not get device location: ', error.message)
     });
@@ -44,41 +58,44 @@ const SearchBar = ({ onSearch, searchResults, coords, setCoords, distance, setDi
     setDistance(e.target.value);
   }
 
-  function handleEquipmentFilterChange(ev) {
-    const item = equipmentFilterValues.find(
-      item => item.value === ev.target.value
-    );
-    console.log('equipment filter change: ', item);
-    setEquipmentType(item);
+  // function handleEquipmentFilterChange(ev) {
+  //   const item = equipmentFilterValues.find(
+  //     item => item.value === ev.target.value
+  //   );
+  //   setEquipmentType(item);
+  // }
+
+  function handleSelectAddress(address) {
+    geocodeByAddress(address)
+      .then(results => {
+        setAddress(results[0].formatted_address)
+        return getLatLng(results[0])
+      }
+      )
+      .then(latLng => {
+        const { lat, lng } = latLng;
+        setCoords({ lat, lng });
+      })
+      .catch(error => console.error('Error', error));
   }
 
   return (
-    <>
-      <FormControl className="search-bar">
-        {/* <Input
-          label="Search"
-          onChange={onSearch}
-          className="search-bar__input"
-          startAdornment={
-            <InputAdornment position="start">
-              <SearchIcon />
-            </InputAdornment>
-          }
-        /> */}
-        <Autocomplete
-          options={searchResults}
-          getOptionLabel={option => option}
-          style={{ width: 300 }}
-          renderInput={params => <TextField {...params} label="Search" />}
-          disabled
-        />
-      </FormControl>
+    <form className="search-bar">
+      <FormGroup row>
+        <AutocompleteField geoLocatedAddress={address} handleSelect={handleSelectAddress} />
+        {geolocationSupported && (
 
-      {geolocationSupported && (
-        <IconButton color="secondary" aria-label="use device location" onClick={useDeviceLocation}>
-          <GpsFixedIcon/>
-        </IconButton>
-      )}
+          <IconButton
+            color={usingLocation ? 'secondary' : 'primary' }
+            aria-label="use device location"
+            title="use device location"
+            onClick={useDeviceLocation}
+            className="search-bar__gps-icon"
+          >
+            <GpsFixedIcon />
+          </IconButton>
+        )}
+      </FormGroup>
 
       <FormControl>
         <InputLabel id="range-input-label">Range</InputLabel>
@@ -88,26 +105,47 @@ const SearchBar = ({ onSearch, searchResults, coords, setCoords, distance, setDi
           value={distance}
           onChange={searchDistanceChange}
         >
-          <MenuItem value={10*1000}>10 km</MenuItem>
-          <MenuItem value={10*1000}>25 km</MenuItem>
-          <MenuItem value={50*1000}>50 km</MenuItem>
-          <MenuItem value={100*1000}>100 km</MenuItem>
-          <MenuItem value={250*1000}>250 km</MenuItem>
-          <MenuItem value={1000*1000}>1,000 km</MenuItem>
-          <MenuItem value={5*1000*1000}>5,000 km</MenuItem>
-          <MenuItem value={1000*1000*1000}>Unlimited</MenuItem>
+          <MenuItem value={10 * 1000}>10 km</MenuItem>
+          <MenuItem value={10 * 1000}>25 km</MenuItem>
+          <MenuItem value={50 * 1000}>50 km</MenuItem>
+          <MenuItem value={100 * 1000}>100 km</MenuItem>
+          <MenuItem value={250 * 1000}>250 km</MenuItem>
+          <MenuItem value={1000 * 1000}>1,000 km</MenuItem>
+          <MenuItem value={5 * 1000 * 1000}>5,000 km</MenuItem>
+          <MenuItem value={1000 * 1000 * 1000}>Unlimited</MenuItem>
         </Select>
       </FormControl>
 
-      <Filter
-        label={"equipment"}
-        activeFilter={type}
-        handler={handleEquipmentFilterChange}
-        listOfValues={equipmentFilterValues}
-        disabled
-      />
-    </>
+      <TextField label="Lat" value={coords.lat} disabled />
+      <TextField label="lng" value={coords.lng} disabled />
+
+      {/*<Filter*/}
+      {/*  label={"equipment"}*/}
+      {/*  activeFilter={type}*/}
+      {/*  handler={handleEquipmentFilterChange}*/}
+      {/*  listOfValues={equipmentFilterValues}*/}
+      {/*  disabled*/}
+      {/*/>*/}
+    </form>
   );
 };
 
-export default SearchBar;
+SearchBar.propTypes = {
+  coords: PropTypes.shape({
+    lat: PropTypes.number.isRequired,
+    lng: PropTypes.number.isRequired,
+  }),
+  // setCoords,
+  // distance,
+  // setDistance
+};
+
+const wrapper = GoogleApiWrapper(
+  (props) => ({
+      apiKey: API_KEY,
+    }
+  ))(SearchBar);
+
+wrapper.displayName = 'GoogleApiWrapper';
+
+export default wrapper;

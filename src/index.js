@@ -1,13 +1,37 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
-import App from './containers/App';
 import * as serviceWorker from './serviceWorker';
+import { Auth0Provider } from "./auth/react-auth0-spa";
+import history from "./utils/history.js";
+import * as config from './config';
+import App from './containers/App';
+import './index.css';
+
+const onRedirectCallback = appState => {
+  history.push(
+    appState && appState.targetUrl
+      ? appState.targetUrl
+      : window.location.pathname
+  );
+};
+
+// Get rid of warning created by third party library
+// Waiting on this issue resolution: https://github.com/google-map-react/google-map-react/issues/783
+const originalWarn = console.warn.bind(console.warn);
+console.warn = (msg) =>!msg.toString().includes(
+  'Warning: componentWillReceiveProps has been renamed, and is not recommended'
+) && originalWarn(msg);
 
 ReactDOM.render(
-  <React.StrictMode>
+  <Auth0Provider
+    domain={config.domain}
+    client_id={config.client_id}
+    redirect_uri={window.location.origin}
+    onRedirectCallback={onRedirectCallback}
+    audience={config.apiAudienceIdentifier}
+  >
     <App />
-  </React.StrictMode>,
+  </Auth0Provider>,
   document.getElementById('root')
 );
 
