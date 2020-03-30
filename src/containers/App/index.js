@@ -26,7 +26,6 @@ const createUrqlClient = (role, token) => {
     },
   });
 };
-
 export const RoleContext = React.createContext(undefined);
 
 function App() {
