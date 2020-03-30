@@ -1,6 +1,4 @@
-import {
-  map,
-} from 'lodash';
+import map from 'lodash/map';
 
 /**
  * Convert hierarchical domain based data to flat format usable in table & map view.
