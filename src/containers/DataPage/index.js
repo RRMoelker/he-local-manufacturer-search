@@ -27,7 +27,7 @@ const DataPage = () => {
   const role = useContext(RoleContext);
 
   const [{data: queryResult, fetching, error: queryError}] = useQuery({
-    query: isAuthenticated && role === ROLES.USER_MANAGER ? queries.displayAuthSearchQuery : queries.displaySearchQuery,
+    query: queries.displaySearchQuery(isAuthenticated && role === ROLES.USER_MANAGER),
     variables: {
       limit: 100,
       distance: searchDistance, // in meters
