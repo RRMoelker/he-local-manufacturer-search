@@ -56,7 +56,7 @@ const DataTable = ({ rows }) => {
   return (
     <>
       {isEndOfQuery && 
-        <Alert severity="info">You have reached maximum number of records we can show you; however, there is likely more data available.<br />Please refine your search criteria.</Alert>}
+        <Alert severity="info">You have reached the maximum number of records we can show you; however, there is likely more data available.<br />Please refine your search criteria.</Alert>}
       <TableContainer className="table__container">
         <Table aria-label="data table" table-layout="auto">
           <TableHead>
