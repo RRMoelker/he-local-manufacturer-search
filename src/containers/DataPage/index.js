@@ -14,7 +14,10 @@ import * as queries from "../../data/queries";
 import "./DataPage.scss";
 import {useAuth0} from "../../auth/react-auth0-spa";
 import {RoleContext} from "../App";
-import {ROLES} from "../../config";
+import {
+  ROLES,
+  MAX_QUERY_SIZE
+} from "../../config";
 import searchQueryDataDisplayAdapter from "../../data/searchQueryDataDisplayAdapter";
 import TabPanel from './TabPanel';
 
@@ -29,7 +32,7 @@ const DataPage = () => {
   const [{data: queryResult, fetching, error: queryError}] = useQuery({
     query: queries.displaySearchQuery(isAuthenticated && role === ROLES.USER_MANAGER),
     variables: {
-      limit: 100,
+      limit: MAX_QUERY_SIZE,
       distance: searchDistance, // in meters
       point: {
         type: "Point",
