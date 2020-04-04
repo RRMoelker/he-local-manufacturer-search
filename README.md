@@ -26,6 +26,8 @@ Set it by running the following in the console on the dev site:
 
     window.localStorage.setItem('HE_DB_SEARCH_DEV_API_KEY', '<key>');
 
+To use .env variables you should create a .env.development.local file, that will be used in development environment - this file is always ignored by git. Please don't change .env file unless you need to add a new environment variable, this file is not ignored by git, so no values should be on it.
+
 ## Build
 
     npm run build
