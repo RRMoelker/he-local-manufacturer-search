@@ -23,6 +23,7 @@ import {
 } from '../../config';
 import searchQueryDataDisplayAdapter from '../../data/searchQueryDataDisplayAdapter';
 import TabPanel from './TabPanel';
+import {trackEvent} from "../../analytics";
 
 const DataPage = () => {
   const { isAuthenticated } = useAuth0();
@@ -50,8 +51,19 @@ const DataPage = () => {
     if (queryResult && !queryError) {
       const formattedRowsData = searchQueryDataDisplayAdapter(queryResult);
       setRowsData(formattedRowsData);
+
+      if (searchCoords.lng !== 0 || searchCoords.lat !== 0) {
+        trackEvent('query-results', {
+          rows: formattedRowsData.length,
+          query: {
+            scale: scaleFilter,
+            distance: searchDistance,
+            coordinates: [searchCoords.lng, searchCoords.lat],
+          }
+        });
+      }
     }
-  }, [queryResult, queryError]);
+  }, [queryResult, queryError]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="data-page">
@@ -72,7 +84,7 @@ const DataPage = () => {
         scaleFilter={scaleFilter}
         setScaleFilter={setScaleFilter}
       />
-      <ExportControl data={rowsData} />
+      <ExportControl rows={rowsData} />
 
       <Tabs
         value={tabIdx}
