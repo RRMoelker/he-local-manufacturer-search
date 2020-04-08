@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types';
+import L from 'leaflet';
 import React, {useState, useEffect } from 'react';
 import {Map, TileLayer, CircleMarker } from 'react-leaflet';
 import GreatCircle from 'react-leaflet-greatcircle'; // distorts correctly near poles
@@ -12,6 +13,11 @@ import {ADDITIONAL_AUTHORIZATION_LABEL } from "../../labels";
 import {MAX_QUERY_SIZE} from "../../config";
 import {LimitReachedAlert} from "../Alerts";
 
+// Set bounds to world https://stackoverflow.com/a/58309265
+// map can go beyond world bound to allow centering view on places near edge when zoomed out.
+const southWest = L.latLng(-90, -300);
+const northEast = L.latLng(90, 300);
+const MAP_BOUNDS = L.latLngBounds(southWest, northEast);
 const MAP_CENTER = [30.0, 10.0];
 const MAP_ZOOM = 2;
 
@@ -72,18 +78,13 @@ function DataMap({rows, searchCoords, setCoords, searchRadius}) {
         <Map
           center={MAP_CENTER}
           zoom={MAP_ZOOM}
+          maxBounds={MAP_BOUNDS}
           onClick={handleClick}
         >
           <TileLayer
             attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          {searchCoords &&
-            <CircleMarker center={[searchCoords.lat, searchCoords.lng]}
-                          radius={4}
-                          color={'#ff0000'}
-            />
-          }
           {markers.map(row =>
             <CircleMarker
               center={[row.lat, row.lng]}
@@ -97,6 +98,15 @@ function DataMap({rows, searchCoords, setCoords, searchRadius}) {
               {...getStyling(row)}
             />
           )}
+          {searchCoords &&
+          <CircleMarker
+            center={[searchCoords.lat, searchCoords.lng]}
+            radius={4}
+            fillColor={'#ff0000'}
+            fillOpacity={1.0}
+            stroke={false}
+          />
+          }
           {searchRadius && searchRadius < 100 * 1000 * 1000 &&
             <GreatCircle
               center={[searchCoords.lat, searchCoords.lng]}
