@@ -1,3 +1,13 @@
+<br/>
+<br/>
+<br/>
+
+**DEPRECATED: moved to** https://github.com/helpfulengineering/project-manufacturer-database
+
+<br/>
+<br/>
+<br/>
+
 [![Netlify Status](https://api.netlify.com/api/v1/badges/45145ece-03f7-45f3-9e71-4991bca90c3d/deploy-status)](https://app.netlify.com/sites/he-local-manufacturer-search/deploys)
 
 Web app to search for nearby production facilities offered by volunteers.
