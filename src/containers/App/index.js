@@ -6,6 +6,7 @@ import DataPage from "../DataPage";
 import "./App.scss";
 import {GRAPHQL_ENDPOINT, ROLES} from "../../config";
 import {useAuth0} from "../../auth/react-auth0-spa";
+import TokenContext from '../../auth/tokenContext';
 import NavBar from "../../components/NavBar";
 import {Container, Paper} from "@material-ui/core";
 import HELogo from "../../assets/helpfulengineering_transparent.png";
@@ -34,6 +35,7 @@ function App() {
   const { loading: authLoading, getTokenSilently, isAuthenticated } = useAuth0();
   const [ urqlClient, setUrqlClient ] = useState(createUrqlClient());
   const [role, setRole] = useState();
+  const [token, setToken] = useState(undefined);
 
   useEffect(() => {
     // updated client with token authorization when authentication is loaded.
@@ -45,7 +47,7 @@ function App() {
         const allowedRoles = hasuraClaims['x-hasura-allowed-roles'];
         const role = allowedRoles.includes(ROLES.USER_MANAGER) ? ROLES.USER_MANAGER : ROLES.USER;
         setRole(role);
-
+        setToken(token);
         setUrqlClient(createUrqlClient(role, token));
       });
     }
@@ -59,20 +61,22 @@ function App() {
   return (
     <Provider value={urqlClient}>
       <RoleContext.Provider value={role}>
-        <Container maxWidth="xl">
-          <Paper className="app--body">
-            <header className="app--header">
-              <a href="https://helpfulengineering.odoo.com/" title="Project by Helpful Engineering" className="app--HE-logo">
-                <img src={HELogo} width="177" height="75" alt="Helpful Engineering Logo"/>
-              </a>
-              <Typography variant="h2" className="app--title">
-                Manufacturing volunteer search
-              </Typography>
-              <NavBar className="app--nav"/>
-            </header>
-            <DataPage />
-          </Paper>
-        </Container>
+        <TokenContext.Provider value={token}>
+          <Container maxWidth="xl">
+            <Paper className="app--body">
+              <header className="app--header">
+                <a href="https://helpfulengineering.odoo.com/" title="Project by Helpful Engineering" className="app--HE-logo">
+                  <img src={HELogo} width="177" height="75" alt="Helpful Engineering Logo"/>
+                </a>
+                <Typography variant="h2" className="app--title">
+                  Manufacturing volunteer search
+                </Typography>
+                <NavBar className="app--nav"/>
+              </header>
+              <DataPage />
+            </Paper>
+          </Container>
+        </TokenContext.Provider>
       </RoleContext.Provider>
     </Provider>
   );
